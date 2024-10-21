@@ -27,7 +27,6 @@ class BaseDataset(Dataset):
         target_sr=16000,
         limit=None,
         max_audio_length=None,
-        max_text_length=None,
         shuffle_index=False,
         instance_transforms=None,
     ):
@@ -51,7 +50,7 @@ class BaseDataset(Dataset):
         self._assert_index_is_valid(index)
 
         index = self._filter_records_from_dataset(
-            index, max_audio_length, max_text_length
+            index, max_audio_length
         )
         index = self._shuffle_and_limit_index(index, limit, shuffle_index)
         if not shuffle_index:
@@ -79,20 +78,33 @@ class BaseDataset(Dataset):
                 (a single dataset element).
         """
         data_dict = self._index[ind]
-        audio_path = data_dict["path"]
-        audio = self.load_audio(audio_path)
-        text = data_dict["text"]
-        text_encoded = self.text_encoder.encode(text)
 
-        spectrogram = self.get_spectrogram(audio)
+        mix_audio_path = data_dict["mix_path"]
+        mix_audio = self.load_audio(mix_audio_path)
+        mix_spectrogram = self.get_spectrogram(mix_audio)
+
+        s1_audio, s2_audio = None, None
+        s1_spectrogram, s2_spectrogram = None, None
+        s1_audio_path = data_dict.get("s1_path")
+        s2_audio_path = data_dict.get("s2_path")
+        if s1_audio_path and s2_audio_path:
+            s1_audio = self.load_audio(s1_audio_path)
+            s2_audio = self.load_audio(s2_audio_path)
+
+            s1_spectrogram = self.get_spectrogram(s1_audio)
+            s2_spectrogram = self.get_spectrogram(s2_audio)
 
         instance_data = {
-            "audio": audio,
-            "spectrogram": spectrogram,
-            "text": text,
-            "text_encoded": text_encoded,
-            "audio_path": audio_path,
-        }
+            "mix_audio": mix_audio,
+            "s1_audio": s1_audio,
+            "s2_audio": s2_audio,
+            "mix_spectrogram": mix_spectrogram,
+            "s1_spectrogram": s1_spectrogram,
+            "s2_spectrogram": s2_spectrogram,
+            "mix_audio_path": mix_audio_path,
+            "s1_audio_path": s1_audio_path,
+            "s2_audio_path": s2_audio_path,
+        } 
 
         # TODO think of how to apply wave augs before calculating spectrogram
         # Note: you may want to preserve both audio in time domain and
@@ -154,7 +166,6 @@ class BaseDataset(Dataset):
     def _filter_records_from_dataset(
         index: list,
         max_audio_length,
-        max_text_length,
     ) -> list:
         """
         Filter some of the elements from the dataset depending on
@@ -174,7 +185,7 @@ class BaseDataset(Dataset):
         initial_size = len(index)
         if max_audio_length is not None:
             exceeds_audio_length = (
-                np.array([el["audio_len"] for el in index]) >= max_audio_length
+                np.array([el["mix_audio_length"] for el in index]) >= max_audio_length
             )
             _total = exceeds_audio_length.sum()
             logger.info(
@@ -184,27 +195,9 @@ class BaseDataset(Dataset):
         else:
             exceeds_audio_length = False
 
-        initial_size = len(index)
-        if max_text_length is not None:
-            exceeds_text_length = (
-                np.array(
-                    [len(CTCTextEncoder.normalize_text(el["text"])) for el in index]
-                )
-                >= max_text_length
-            )
-            _total = exceeds_text_length.sum()
-            logger.info(
-                f"{_total} ({_total / initial_size:.1%}) records are longer then "
-                f"{max_text_length} characters. Excluding them."
-            )
-        else:
-            exceeds_text_length = False
-
-        records_to_filter = exceeds_text_length | exceeds_audio_length
-
-        if records_to_filter is not False and records_to_filter.any():
-            _total = records_to_filter.sum()
-            index = [el for el, exclude in zip(index, records_to_filter) if not exclude]
+        if exceeds_audio_length is not False and exceeds_audio_length.any():
+            _total = exceeds_audio_length.sum()
+            index = [el for el, exclude in zip(index, exceeds_audio_length) if not exclude]
             logger.info(
                 f"Filtered {_total} ({_total / initial_size:.1%}) records  from dataset"
             )
@@ -223,16 +216,28 @@ class BaseDataset(Dataset):
                 such as label and object path.
         """
         for entry in index:
-            assert "path" in entry, (
-                "Each dataset item should include field 'path'" " - path to audio file."
+            assert "mix_path" in entry, (
+                "Each dataset item should include field 'mix_path'" " - path to mixed audio file."
             )
-            assert "text" in entry, (
-                "Each dataset item should include field 'text'"
-                " - object ground-truth transcription."
+            assert "mix_audio_length" in entry, (
+                "Each dataset item should include field 'mix_audio_length'"
+                " - length of the mixed audio."
             )
-            assert "audio_len" in entry, (
-                "Each dataset item should include field 'audio_len'"
-                " - length of the audio."
+
+            assert "s1_path" in entry, (
+                "Each dataset item should include field 's1_path'" " - path to s1 audio file."
+            )
+            assert "s1_audio_length" in entry, (
+                "Each dataset item should include field 's1_audio_length'"
+                " - length of the s1 audio."
+            )
+
+            assert "s2_path" in entry, (
+                "Each dataset item should include field 's2_path'" " - path to s2 audio file."
+            )
+            assert "s2_audio_length" in entry, (
+                "Each dataset item should include field 's2_audio_length'"
+                " - length of the s2 audio."
             )
 
     @staticmethod
@@ -249,7 +254,7 @@ class BaseDataset(Dataset):
                 of the dataset. The dict has required metadata information,
                 such as label and object path.
         """
-        return sorted(index, key=lambda x: x["audio_len"])
+        return sorted(index, key=lambda x: x["mix_audio_len"])
 
     @staticmethod
     def _shuffle_and_limit_index(index, limit, shuffle_index):
