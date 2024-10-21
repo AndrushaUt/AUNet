@@ -27,6 +27,12 @@ class SI_SDRiMetric(BaseMetric):
             estimated_s1 = estimateds_s1[i][:s1_audio_length]
             estimated_s2 = estimateds_s2[i][:s2_audio_length]
 
-            si_sdris.append(calc_si_sdri(s1_audio, estimated_s1, mix_audio))
-            si_sdris.append(calc_si_sdri(s2_audio, estimated_s2, mix_audio))
+            s1_s1 = calc_si_sdri(s1_audio, estimated_s1, mix_audio)
+            s1_s2 = calc_si_sdri(s1_audio, estimated_s2, mix_audio)
+            s2_s1 = calc_si_sdri(s2_audio, estimated_s1, mix_audio)
+            s2_s2 = calc_si_sdri(s2_audio, estimated_s2, mix_audio)
+            if s1_s1 + s2_s2 > s1_s2 + s2_s1:
+                si_sdris.append((s1_s1 + s2_s2) / 2)
+            else:
+                si_sdris.append((s1_s2 + s2_s1) / 2)
         return sum(si_sdris) / len(si_sdris)
