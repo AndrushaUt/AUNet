@@ -1,13 +1,8 @@
-# Based on seminar materials
+import torch
 
-# Don't forget to support cases when target_text == ''
+def calc_si_sdr(target, est) -> float:
+    alpha = (est * target).sum() / torch.square(target)
+    return 10 * torch.log10(torch.square(alpha * target).sum() / torch.square(alpha * target - est).sum())
 
-
-def calc_cer(target_text, predicted_text) -> float:
-    # TODO
-    pass
-
-
-def calc_wer(target_text, predicted_text) -> float:
-    # TODO
-    pass
+def calc_si_sdri(target, est, source) -> float:
+    return calc_si_sdr(target, est) - calc_si_sdr(target, source)
