@@ -6,8 +6,6 @@ import torch
 import torchaudio
 from torch.utils.data import Dataset
 
-from src.text_encoder import CTCTextEncoder
-
 logger = logging.getLogger(__name__)
 
 
@@ -224,21 +222,21 @@ class BaseDataset(Dataset):
                 " - length of the mixed audio."
             )
 
-            assert "s1_path" in entry, (
-                "Each dataset item should include field 's1_path'" " - path to s1 audio file."
-            )
-            assert "s1_audio_length" in entry, (
-                "Each dataset item should include field 's1_audio_length'"
-                " - length of the s1 audio."
-            )
+            # assert "s1_path" in entry, (
+            #     "Each dataset item should include field 's1_path'" " - path to s1 audio file."
+            # )
+            # assert "s1_audio_length" in entry, (
+            #     "Each dataset item should include field 's1_audio_length'"
+            #     " - length of the s1 audio."
+            # )
 
-            assert "s2_path" in entry, (
-                "Each dataset item should include field 's2_path'" " - path to s2 audio file."
-            )
-            assert "s2_audio_length" in entry, (
-                "Each dataset item should include field 's2_audio_length'"
-                " - length of the s2 audio."
-            )
+            # assert "s2_path" in entry, (
+            #     "Each dataset item should include field 's2_path'" " - path to s2 audio file."
+            # )
+            # assert "s2_audio_length" in entry, (
+            #     "Each dataset item should include field 's2_audio_length'"
+            #     " - length of the s2 audio."
+            # )
 
     @staticmethod
     def _sort_index(index):
@@ -254,7 +252,7 @@ class BaseDataset(Dataset):
                 of the dataset. The dict has required metadata information,
                 such as label and object path.
         """
-        return sorted(index, key=lambda x: x["mix_audio_len"])
+        return sorted(index, key=lambda x: x["mix_audio_length"])
 
     @staticmethod
     def _shuffle_and_limit_index(index, limit, shuffle_index):

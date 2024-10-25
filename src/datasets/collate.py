@@ -45,13 +45,15 @@ def collate_fn(dataset_items: list[dict]):
 
     result["mix_audio_path"] = mix_audio_paths
     result["mix_spectrogram_length"] = torch.tensor(mix_spec_lengths)
+    result["mix_audio_length"] = torch.tensor(mix_spec_lengths)
     result["mix_audio"] = torch.nn.utils.rnn.pad_sequence(mix_audios, batch_first=True)
-    result["spectrogram"] = torch.nn.utils.rnn.pad_sequence(mix_specs, batch_first=True)
+    result["mix_spectrogram"] = torch.nn.utils.rnn.pad_sequence(mix_specs, batch_first=True)
     result["mix_audio"] = torch.transpose(result["mix_audio"], 1, 2).squeeze(1)
     result["mix_spectrogram"] = torch.transpose(result["mix_spectrogram"], 1, 3).squeeze(1)
 
     result["s1_audio_path"] = s1_audio_paths
     result["s1_spectrogram_length"] = torch.tensor(s1_spec_lengths)
+    result["s1_audio_length"] = torch.tensor(s1_spec_lengths)
     result["s1_audio"] = torch.nn.utils.rnn.pad_sequence(s1_audios, batch_first=True)
     result["s1_spectrogram"] = torch.nn.utils.rnn.pad_sequence(s1_specs, batch_first=True)
     result["s1_audio"] = torch.transpose(result["s1_audio"], 1, 2).squeeze(1)
@@ -59,6 +61,7 @@ def collate_fn(dataset_items: list[dict]):
 
     result["s2_audio_path"] = s2_audio_paths
     result["s2_spectrogram_length"] = torch.tensor(s2_spec_lengths)
+    result["s2_audio_length"] = torch.tensor(s2_spec_lengths)
     result["s2_audio"] = torch.nn.utils.rnn.pad_sequence(s2_audios, batch_first=True)
     result["s2_spectrogram"] = torch.nn.utils.rnn.pad_sequence(s2_specs, batch_first=True)
     result["s2_audio"] = torch.transpose(result["s2_audio"], 1, 2).squeeze(1)

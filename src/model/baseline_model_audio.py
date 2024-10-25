@@ -45,12 +45,13 @@ class SpeechSeparationModel(nn.Module):
         self.decoder_spk1 = Decoder(hidden_size, kernel_size, stride)
         self.decoder_spk2 = Decoder(hidden_size, kernel_size, stride)
 
-    def forward(self, input_audio):
-        encoded_audio = self.encoder(input_audio)
+    def forward(self, mix_audio: torch.Tensor, **batch):
+        mix_audio = mix_audio.unsqueeze(1)
+        encoded_audio = self.encoder(mix_audio)
         
         masked_spk1, masked_spk2 = self.masking(encoded_audio)
         
-        output_spk1 = self.decoder_spk1(masked_spk1)
-        output_spk2 = self.decoder_spk2(masked_spk2)
+        output_spk1 = self.decoder_spk1(masked_spk1).squeeze(1)
+        output_spk2 = self.decoder_spk2(masked_spk2).squeeze(1)
         
         return output_spk1, output_spk2
