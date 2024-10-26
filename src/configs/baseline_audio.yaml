@@ -2,7 +2,7 @@ defaults:
   - model: baseline_audio
   - writer: wandb
   - metrics: baseline_audio
-  - datasets: baseline_audio
+  - datasets: conv_tasnet
   - dataloader: example
   - transforms: example_only_instance
   - _self_

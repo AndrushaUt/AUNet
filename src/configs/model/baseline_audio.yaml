@@ -1,1 +1,1 @@
-_target_: src.model.SpeechSeparationModel
+_target_: src.model.ConvTasNet
