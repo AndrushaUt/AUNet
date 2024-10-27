@@ -40,8 +40,7 @@ class ConvTasNet(nn.Module):
             kernel_size=mask_kernel_size,
             num_feats=mask_num_feats,
             num_layers=mask_num_layers,
-            num_stacks=mask_num_stacks,
-            device="cpu"
+            num_stacks=mask_num_stacks
         )
 
         self.decoder = nn.ConvTranspose1d(

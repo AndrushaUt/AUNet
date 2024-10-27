@@ -67,8 +67,6 @@ class Mask(nn.Module):
         x = torch.zeros_like(features, requires_grad=True)
         for layer in self.separation_layers:
             residual, skip_connection = layer(features)
-            # if not x:
-            #     x = torch.zeros_like(skip_connection, device=self.device, requires_grad=True)
             if residual is not None:
                 features = features + residual
 
