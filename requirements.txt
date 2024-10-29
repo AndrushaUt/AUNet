@@ -13,7 +13,6 @@ hydra-core
 
 black
 isort
-torchmetrics
 datasets
 wget
 pre-commit

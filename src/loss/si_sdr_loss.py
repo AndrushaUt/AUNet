@@ -1,11 +1,9 @@
 import torch
 from torch import nn
 
-from torchmetrics.audio import PermutationInvariantTraining
+from src.metrics.utils import calc_si_sdr
 
-from src.metrics.utils import calc_si_sdr, ScaleInvariantSignalDistortionRatio
-
-class SI_SDRI_LOSS(nn.MSELoss):
+class SI_SDR_LOSS(nn.MSELoss):
     def __init__(self):
         super().__init__()
         self.loss = nn.MSELoss(reduction='none')

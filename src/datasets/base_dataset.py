@@ -79,26 +79,26 @@ class BaseDataset(Dataset):
 
         mix_audio_path = data_dict["mix_path"]
         mix_audio = self.load_audio(mix_audio_path)
-        mix_spectrogram = self.get_spectrogram(mix_audio)
+        # mix_spectrogram = self.get_spectrogram(mix_audio)
 
         s1_audio, s2_audio = None, None
-        s1_spectrogram, s2_spectrogram = None, None
+        # s1_spectrogram, s2_spectrogram = None, None
         s1_audio_path = data_dict.get("s1_path")
         s2_audio_path = data_dict.get("s2_path")
         if s1_audio_path and s2_audio_path:
             s1_audio = self.load_audio(s1_audio_path)
             s2_audio = self.load_audio(s2_audio_path)
 
-            s1_spectrogram = self.get_spectrogram(s1_audio)
-            s2_spectrogram = self.get_spectrogram(s2_audio)
+            # s1_spectrogram = self.get_spectrogram(s1_audio)
+            # s2_spectrogram = self.get_spectrogram(s2_audio)
 
         instance_data = {
             "mix_audio": mix_audio,
             "s1_audio": s1_audio,
             "s2_audio": s2_audio,
-            "mix_spectrogram": mix_spectrogram,
-            "s1_spectrogram": s1_spectrogram,
-            "s2_spectrogram": s2_spectrogram,
+            # "mix_spectrogram": mix_spectrogram,
+            # "s1_spectrogram": s1_spectrogram,
+            # "s2_spectrogram": s2_spectrogram,
             "mix_audio_path": mix_audio_path,
             "s1_audio_path": s1_audio_path,
             "s2_audio_path": s2_audio_path,
