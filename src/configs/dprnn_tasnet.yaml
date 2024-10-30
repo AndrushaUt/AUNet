@@ -1,6 +1,6 @@
 defaults:
   - model: dprnn_tasnet
-  - writer: wandb
+  - writer: wandb_dprnn
   - metrics: baseline_audio
   - datasets: kaggle
   - dataloader: example

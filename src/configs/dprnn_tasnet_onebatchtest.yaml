@@ -1,6 +1,6 @@
 defaults:
   - model: dprnn_tasnet
-  - writer: wandb
+  - writer: wandb_dprnn_onebatchtest
   - metrics: baseline_audio
   - datasets: kaggle_onebatchtest_dpprnn
   - dataloader: onebatch
