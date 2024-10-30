@@ -2,8 +2,8 @@ defaults:
   - model: dprnn_tasnet
   - writer: wandb
   - metrics: baseline_audio
-  - datasets: kaggle
-  - dataloader: example
+  - datasets: kaggle_onebatchtest_dpprnn
+  - dataloader: onebatch
   - transforms: example_only_instance
   - _self_
 optimizer:
@@ -21,9 +21,9 @@ lr_scheduler:
 loss_function:
   _target_: src.loss.SI_SDR_LOSS
 trainer:
-  log_step: 200
-  n_epochs: 50
-  epoch_len: 1000
+  log_step: 5
+  n_epochs: 5
+  epoch_len: 10
   device_tensors: ["mix_audio", "s1_audio", "s2_audio"] # which tensors should be on device (ex. GPU)
   resume_from: null # null or path to the checkpoint dir with *.pth and config.yaml
   device: auto # device name or "auto"
