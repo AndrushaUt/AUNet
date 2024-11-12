@@ -3,10 +3,9 @@ from torch import nn
 
 from src.metrics.utils import calc_si_sdr
 
-class SI_SDR_LOSS(nn.MSELoss):
+class SI_SDR_LOSS(nn.Module):
     def __init__(self):
         super().__init__()
-        self.loss = nn.MSELoss(reduction='none')
 
     def forward(self, s1_audio, s2_audio, s1_estimated, s2_estimated, **batch):
         s1_s1 = calc_si_sdr(s1_audio, s1_estimated)

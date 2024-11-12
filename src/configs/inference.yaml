@@ -1,13 +1,13 @@
 defaults:
-  - model: baseline
-  - metrics: example
-  - datasets: example_eval # we do not want to run inference on training data
-  - dataloader: example
-  - transforms: example
+  - model: conv_tasnet
+  - metrics: baseline_audio
+  - datasets: conv_tasnet # we do not want to run inference on training data
+  - dataloader: onebatch
+  - transforms: example_only_instance
   - _self_
 inferencer:
-  device_tensors: ["data_object", "labels"] # which tensors should be on device (ex. GPU)
+  device_tensors: ["mix_audio", "s1_audio", "s2_audio"] # which tensors should be on device (ex. GPU)
   device: auto # device name or "auto"
-  save_path: "example" # any name here, can be a dataset name
+  save_path: "prediction" # any name here, can be a dataset name
   seed: 1
-  from_pretrained: "saved/model_best.pth" # path to the pretrained model
+  from_pretrained: "saved/conv_tasnet_2/model_best.pth" # path to the pretrained model

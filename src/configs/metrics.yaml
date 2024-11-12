@@ -1,0 +1,11 @@
+defaults:
+  - _self_
+paths:
+  s1_estimated_path: "data/saved/prediction/train/s1_estimated"
+  s2_estimated_path: "data/saved/prediction/train/s2_estimated"
+  s1_target_path: "../dla_dataset/audio/train/s1"
+  s2_target_path: "../dla_dataset/audio/train/s2"
+  mix_path: "../dla_dataset/audio/train/mix"
+vars:
+  target_sr: 16000
+
