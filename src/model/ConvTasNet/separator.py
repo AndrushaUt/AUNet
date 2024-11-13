@@ -4,7 +4,7 @@ from torch import nn
 from torch import Tensor
 import torch
 
-class Mask(nn.Module):
+class Separator(nn.Module):
     def __init__(
         self,
         input_size: int,
@@ -14,18 +14,15 @@ class Mask(nn.Module):
         num_feats: int,
         num_layers: int,
         num_stacks: int,
-        device: torch.device = "cuda",
+        norm_type: str,
     ):
         super().__init__()
 
         self.input_size = input_size
         self.num_speakers = num_speakers
-        self.device = device
 
-        self.input_normalization = nn.GroupNorm(
-            num_groups=1, 
-            num_channels=input_size
-        )
+        self.norm = nn.GroupNorm(1, hidden_size) if norm_type == 'group' else nn.LayerNorm(hidden_size)
+
         self.input_convolution = nn.Conv1d(
             in_channels=input_size, 
             out_channels=num_feats, 
@@ -45,7 +42,7 @@ class Mask(nn.Module):
                         kernel_size = kernel_size,
                         padding=d,
                         dilation=d,
-                        residual=(not layer==num_layers-1 or not stack==num_stacks-1),
+                        norm_type=norm_type,
                     )
                 )
                 d *= 2
@@ -62,18 +59,21 @@ class Mask(nn.Module):
 
     def forward(self, mix_audio: Tensor):
         batch_size = mix_audio.shape[0]
-        features = self.input_convolution(self.input_normalization(mix_audio))
+        features = None
+        if isinstance(self.norm, nn.GroupNorm):
+            features = self.input_convolution(self.norm(mix_audio))
+        else:
+            mix_audio = mix_audio.transpose(1, 2)
+            features = self.input_convolution(self.norm(mix_audio).transpose(1, 2))
 
         x = torch.zeros_like(features, requires_grad=True)
         for layer in self.separation_layers:
-            residual, skip_connection = layer(features)
-            if residual is not None:
-                features = features + residual
+            out, skip_connection = layer(features)
 
+            features = features + out
             x =  x + skip_connection
 
-        x = self.output_prelu(x)
-        x = self.output_convolution(x)
+        x = self.output_convolution(self.output_prelu(x))
         output = self.output_activation(x)
 
         return output.view(batch_size, self.num_speakers, self.input_size, -1)

@@ -3,7 +3,7 @@ defaults:
   - writer: wandb
   - metrics: baseline_audio
   - datasets: kaggle
-  - dataloader: example
+  - dataloader: exapmle
   - transforms: example_only_instance
   - _self_
 optimizer:
@@ -23,7 +23,7 @@ loss_function:
   _target_: src.loss.SI_SDR_LOSS
 trainer:
   log_step: 200
-  n_epochs: 50
+  n_epochs: 100
   epoch_len: 1000
   device_tensors: ["mix_audio", "s1_audio", "s2_audio"] # which tensors should be on device (ex. GPU)
   resume_from: null # null or path to the checkpoint dir with *.pth and config.yaml

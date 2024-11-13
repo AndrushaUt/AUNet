@@ -1,4 +1,5 @@
-from src.model.ConvTasNet.masking import Mask
+from src.model.ConvTasNet.separator import Separator
+from src.utils.model_utils import pad_tensor
 
 from torch import nn
 from torch import Tensor
@@ -10,11 +11,12 @@ class ConvTasNet(nn.Module):
         num_speakers: int = 2,
         encoder_kernel_size:int = 16,
         encoder_num_feats: int = 512,
-        mask_kernel_size: int = 3,
-        mask_num_feats: int = 128,
-        mask_num_hidden: int = 512,
-        mask_num_layers: int = 8,
-        mask_num_stacks: int = 3,
+        separator_kernel_size: int = 3,
+        separator_num_feats: int = 128,
+        separator_num_hidden: int = 512,
+        separator_num_layers: int = 8,
+        separator_num_stacks: int = 3,
+        norm_type: str = "group",
     ):
         super().__init__()
 
@@ -22,6 +24,7 @@ class ConvTasNet(nn.Module):
         self.encoder_kernel_size = encoder_kernel_size
         self.encoder_num_feats = encoder_num_feats
         self.encoder_stride = self.encoder_kernel_size // 2
+        self.device = "cuda" if torch.cuda.is_available() else "cpu"
 
 
         self.encoder = nn.Conv1d(
@@ -33,16 +36,6 @@ class ConvTasNet(nn.Module):
             bias=False,
         )
 
-        self.separation = Mask(
-            input_size=self.encoder_num_feats,
-            hidden_size=mask_num_hidden,
-            num_speakers=self.num_speakers,
-            kernel_size=mask_kernel_size,
-            num_feats=mask_num_feats,
-            num_layers=mask_num_layers,
-            num_stacks=mask_num_stacks
-        )
-
         self.decoder = nn.ConvTranspose1d(
             in_channels=self.encoder_num_feats,
             out_channels=1,
@@ -52,38 +45,34 @@ class ConvTasNet(nn.Module):
             bias=False,
         )
 
-    def pad_tensor(self, tensor: Tensor):
-        batch_size, num_channels, num_frames = tensor.shape
-        
-        is_odd = self.encoder_kernel_size % 2
-        num_strides = (num_frames - is_odd) // self.encoder_stride
-        num_remainings = num_frames - (is_odd + num_strides * self.encoder_stride)
-
-        if not num_remainings:
-            return tensor, 0
-
-        to_pad = torch.zeros(
-            batch_size,
-            num_channels,
-            self.encoder_stride - num_remainings,
-            device=self.device,
+        self.separation = Separator(
+            input_size=self.encoder_num_feats,
+            hidden_size=separator_num_hidden,
+            num_speakers=self.num_speakers,
+            kernel_size=separator_kernel_size,
+            num_feats=separator_num_feats,
+            num_layers=separator_num_layers,
+            num_stacks=separator_num_stacks,
+            norm_type=norm_type,
         )
-
-        return torch.cat([tensor, to_pad], dim=2), self.encoder_stride - num_remainings
 
 
     def forward(self, mix_audio: Tensor, **batch):
         mix_audio = mix_audio.unsqueeze(1)
-        padded, num_pads = self.pad_tensor(mix_audio)
+        padded, num_pads = pad_tensor(
+            mix_audio, 
+            self.encoder_kernel_size, 
+            self.encoder_stride, 
+            self.device
+            )
         batch_size = len(padded)
+
         encoded = self.encoder(padded)
         masked = self.separation(encoded) * encoded.unsqueeze(1)
         masked = masked.view(batch_size * self.num_speakers, self.encoder_num_feats, -1)
-        decoded = self.decoder(masked)
-        output = decoded.view(batch_size, self.num_speakers, -1)
-        if num_pads:
-            output = output[..., :-num_pads]
-        return output
+        result = self.decoder(masked).view(batch_size, self.num_speakers, -1)
+            
+        return result[..., :-num_pads] if num_pads else result
 
     
     def __str__(self):

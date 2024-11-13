@@ -10,38 +10,37 @@ class ConvBlock(nn.Module):
         kernel_size: int,
         padding: int, 
         dilation: int,
-        residual: bool = True,
+        norm_type: str,
     ):
         super().__init__()
 
-        self.convolutions = nn.Sequential(
-            nn.Conv1d(
+        self.first_conv = nn.Conv1d(
                 in_channels=input_size, 
                 out_channels=hidden_size, 
                 kernel_size=1
-            ),
-            nn.PReLU(),
-            nn.GroupNorm(num_groups=1, num_channels=hidden_size),
+            )
+        self.first_activation = nn.PReLU()
+        
+        self.first_norm = nn.GroupNorm(1, hidden_size) if norm_type == 'group' else nn.LayerNorm(hidden_size)
 
-            nn.Conv1d(
+
+        self.second_conv = nn.Conv1d(
                 in_channels=hidden_size, 
                 out_channels=hidden_size, 
                 kernel_size=kernel_size,
                 padding=padding,
                 dilation=dilation,
                 groups=hidden_size
-            ),
-            nn.PReLU(),
-            nn.GroupNorm(num_groups=1, num_channels=hidden_size),
-        )
-
-        self.residual = None
-        if residual:
-            self.residual = nn.Conv1d(
-                in_channels=hidden_size, 
-                out_channels=input_size, 
-                kernel_size=1
             )
+        self.second_activation = nn.PReLU()
+        self.second_norm = nn.GroupNorm(1, hidden_size) if norm_type == 'group' else nn.LayerNorm(hidden_size)
+
+
+        self.out = nn.Conv1d(
+            in_channels=hidden_size, 
+            out_channels=input_size, 
+            kernel_size=1
+        )
 
         self.skip_connection = nn.Conv1d(
             in_channels=hidden_size, 
@@ -49,13 +48,23 @@ class ConvBlock(nn.Module):
             kernel_size=1
         )
 
-    
     def forward(self, mix_audio: Tensor):
-        x = self.convolutions(mix_audio)
-        residual = self.residual(x) if self.residual else None
+        if isinstance(self.first_norm, nn.GroupNorm):
+            x = self.first_activation(self.first_conv(mix_audio))
+            x = self.first_norm(x)
+            x = self.second_activation(self.second_conv(x))
+            x = self.second_norm(x)
+        else:
+            x = self.first_activation(self.first_conv(mix_audio)).transpose(1, 2)
+            x = self.first_norm(x).transpose(1, 2)
+            x = self.second_activation(self.second_conv(x)).transpose(1, 2)
+            x = self.second_norm(x).transpose(1, 2)
+            
+
+        out = self.out(x)
         skip_connection = self.skip_connection(x)
 
-        return residual, skip_connection
+        return out, skip_connection
 
 
 

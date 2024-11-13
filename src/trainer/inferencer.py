@@ -147,8 +147,8 @@ class Inferencer(BaseTrainer):
         for i in range(batch_size):
             # clone because of
             # https://github.com/pytorch/pytorch/issues/1995
-            s1_estimated = batch["s1_estimated"][i].clone().numpy()
-            s2_estimated = batch["s2_estimated"][i].clone().numpy()
+            s1_estimated = batch["s1_estimated"][i].clone().cpu().numpy()
+            s2_estimated = batch["s2_estimated"][i].clone().cpu().numpy()
             name = batch["mix_audio_path"][i].split('/')[-1]
 
             s1_estimated = s1_estimated / np.max(np.abs(s1_estimated))
