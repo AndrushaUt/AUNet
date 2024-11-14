@@ -16,9 +16,12 @@ class ConvTasNet(nn.Module):
         separator_num_hidden: int = 512,
         separator_num_layers: int = 8,
         separator_num_stacks: int = 3,
-        norm_type: str = "group",
+        norm_type: str = "global",
+        activation: str = "sigmoid",
     ):
         super().__init__()
+        assert norm_type in ["global", "local"], "Unexpected normalization type"
+        assert activation in ["sigmoid", "relu"], "Unexpected activation"
 
         self.num_speakers = num_speakers
         self.encoder_kernel_size = encoder_kernel_size
@@ -54,6 +57,7 @@ class ConvTasNet(nn.Module):
             num_layers=separator_num_layers,
             num_stacks=separator_num_stacks,
             norm_type=norm_type,
+            activation=activation,
         )
 
 

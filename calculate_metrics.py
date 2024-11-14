@@ -51,7 +51,7 @@ def main(config):
 
                 si_sdris.append(max((s1_s1 + s2_s2) / 2, (s1_s2 + s2_s1) / 2))
             else:
-                print("Invalid s1 or s2 path")
+                print("Invalid path")
         else:
             print("Invalid format")
 

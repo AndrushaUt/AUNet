@@ -15,13 +15,14 @@ class Separator(nn.Module):
         num_layers: int,
         num_stacks: int,
         norm_type: str,
+        activation: str,
     ):
         super().__init__()
 
         self.input_size = input_size
         self.num_speakers = num_speakers
 
-        self.norm = nn.GroupNorm(1, hidden_size) if norm_type == 'group' else nn.LayerNorm(hidden_size)
+        self.norm = nn.GroupNorm(1, hidden_size) if norm_type == 'global' else nn.LayerNorm(hidden_size)
 
         self.input_convolution = nn.Conv1d(
             in_channels=input_size, 
@@ -54,7 +55,8 @@ class Separator(nn.Module):
             kernel_size=1,
         )
         
-        self.output_activation=nn.Sigmoid()
+        self.output_activation = nn.Sigmoid() if activation == 'sigmoid' else nn.ReLU()
+
 
 
     def forward(self, mix_audio: Tensor):

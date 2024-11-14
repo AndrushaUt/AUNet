@@ -21,7 +21,7 @@ class ConvBlock(nn.Module):
             )
         self.first_activation = nn.PReLU()
         
-        self.first_norm = nn.GroupNorm(1, hidden_size) if norm_type == 'group' else nn.LayerNorm(hidden_size)
+        self.first_norm = nn.GroupNorm(1, hidden_size) if norm_type == 'global' else nn.LayerNorm(hidden_size)
 
 
         self.second_conv = nn.Conv1d(
@@ -33,7 +33,7 @@ class ConvBlock(nn.Module):
                 groups=hidden_size
             )
         self.second_activation = nn.PReLU()
-        self.second_norm = nn.GroupNorm(1, hidden_size) if norm_type == 'group' else nn.LayerNorm(hidden_size)
+        self.second_norm = nn.GroupNorm(1, hidden_size) if norm_type == 'global' else nn.LayerNorm(hidden_size)
 
 
         self.out = nn.Conv1d(

@@ -1,1 +1,3 @@
 _target_: src.model.ConvTasNet
+norm_type: "global" # "global" or "local"
+activation: "relu" # "relu" or "sigmoid"
