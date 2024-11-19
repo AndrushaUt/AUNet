@@ -22,9 +22,9 @@ lr_scheduler:
 loss_function:
   _target_: src.loss.SI_SDR_LOSS
 trainer:
-  log_step: 200
+  log_step: 800
   n_epochs: 100
-  epoch_len: 1000
+  epoch_len: 4000
   device_tensors: ["mix_audio", "s1_audio", "s2_audio"] # which tensors should be on device (ex. GPU)
   resume_from: null # null or path to the checkpoint dir with *.pth and config.yaml
   device: auto # device name or "auto"
@@ -35,3 +35,4 @@ trainer:
   save_dir: "saved"
   max_grad_norm: 5
   seed: 1
+  accumulation_steps: 4

@@ -30,6 +30,7 @@ class BaseTrainer:
         epoch_len=None,
         skip_oom=True,
         batch_transforms=None,
+        accumulation_steps=1,
     ):
         """
         Args:
@@ -72,6 +73,7 @@ class BaseTrainer:
         self.optimizer = optimizer
         self.lr_scheduler = lr_scheduler
         self.batch_transforms = batch_transforms
+        self.accumulation_steps = accumulation_steps
 
         # define dataloaders
         self.train_dataloader = dataloaders["train"]
@@ -208,6 +210,7 @@ class BaseTrainer:
         ):
             try:
                 batch = self.process_batch(
+                    batch_idx,
                     batch,
                     metrics=self.train_metrics,
                 )
@@ -281,6 +284,7 @@ class BaseTrainer:
                 total=len(dataloader),
             ):
                 batch = self.process_batch(
+                    batch_idx,
                     batch,
                     metrics=self.evaluation_metrics,
                 )

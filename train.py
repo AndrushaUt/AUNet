@@ -78,6 +78,7 @@ def main(config):
         writer=writer,
         batch_transforms=batch_transforms,
         skip_oom=config.trainer.get("skip_oom", True),
+        accumulation_steps=config.trainer.get("accumulation_steps", 1),
     )
 
     trainer.train()
