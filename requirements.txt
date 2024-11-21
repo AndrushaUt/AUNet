@@ -16,3 +16,4 @@ isort
 datasets
 wget
 pre-commit
+torchmetrics
