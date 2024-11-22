@@ -10,4 +10,4 @@ inferencer:
   device: auto # device name or "auto"
   save_path: "prediction" # any name here, can be a dataset name
   seed: 1
-  from_pretrained: "saved/conv_tasnet 3/model_best-8.pth" # path to the pretrained model
+  from_pretrained: "saved/best_conv_tasnet/best_model.pth" # path to the pretrained model

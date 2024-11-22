@@ -11,20 +11,15 @@ optimizer:
   lr: 1e-3
 lr_scheduler:
   _target_: torch.optim.lr_scheduler.ReduceLROnPlateau
-  # max_lr: 5e-4
-  # pct_start: 0.1
-  # steps_per_epoch: ${trainer.epoch_len}
-  # epochs: 100 #${trainer.n_epochs}
-  # anneal_strategy: cos
   mode: "max"
   factor: 0.5
   patience: 3
 loss_function:
   _target_: src.loss.SI_SDR_LOSS
 trainer:
-  log_step: 800
+  log_step: 200
   n_epochs: 100
-  epoch_len: 4000
+  epoch_len: 1000
   device_tensors: ["mix_audio", "s1_audio", "s2_audio"] # which tensors should be on device (ex. GPU)
   resume_from: null # null or path to the checkpoint dir with *.pth and config.yaml
   device: auto # device name or "auto"
@@ -35,4 +30,4 @@ trainer:
   save_dir: "saved"
   max_grad_norm: 5
   seed: 1
-  accumulation_steps: 4
+  accumulation_steps: 1
