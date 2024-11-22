@@ -8,43 +8,43 @@ from src.model.DpRnnTasnet.dp_rnn_block import DPRNNBlock
 class DpRnnTasNet(nn.Module):
     def __init__(
         self,
-        input_channels: int = 1,
+        in_channels: int = 256,
         num_speakers: int = 2,
-        bottleneck_channels: int=128,
+        out_channels: int=128,
         hidden_size:int =128,
         chunk_size:int =100,
-        n_repeats:int =6,
+        num_layers:int =6,
         bidirectional: bool=True,
-        num_layers:int =1,
+        rnn_num_layers:int =1,
         dropout:float =0.0,
     ):
         super().__init__()
         self.chunk_size = chunk_size
-        self.output_channels = input_channels
+        self.output_channels = in_channels
         self.overlapping_stride = chunk_size // 2
         self.num_speakers = num_speakers
-        self.bottleneck_channels = bottleneck_channels
+        self.bottleneck_channels = out_channels
 
-        self.tiny_layer = nn.Sequential(GlobalLayerNorm(input_channels), nn.Conv1d(input_channels, bottleneck_channels, 1))
+        self.tiny_layer = nn.Sequential(GlobalLayerNorm(in_channels), nn.Conv1d(in_channels, out_channels, 1))
 
         self.dpp_rnn_blocks = nn.Sequential()
-        for i in range(n_repeats):
+        for i in range(num_layers):
             self.dpp_rnn_blocks.add_module(
                 f"DPRNNBlock_{i}",
                 DPRNNBlock(
-                    bottleneck_channels,
+                    out_channels,
                     hidden_size,
                     bidirectional=bidirectional,
-                    num_layers=num_layers,
+                    num_layers=rnn_num_layers,
                     dropout=dropout,
                 )
             )
 
-        self.source_separator = nn.Sequential(nn.PReLU(), nn.Conv2d(bottleneck_channels, num_speakers * bottleneck_channels, 1))
+        self.source_separator = nn.Sequential(nn.PReLU(), nn.Conv2d(out_channels, num_speakers * out_channels, 1))
 
-        self.out_layer = nn.Sequential(nn.Conv1d(bottleneck_channels, bottleneck_channels, 1), nn.Tanh())
-        self.layer_gate = nn.Sequential(nn.Conv1d(bottleneck_channels, bottleneck_channels, 1), nn.Sigmoid())
-        self.mask_layer = nn.Conv1d(bottleneck_channels, input_channels, 1, bias=False)
+        self.out_layer = nn.Sequential(nn.Conv1d(out_channels, out_channels, 1), nn.Tanh())
+        self.layer_gate = nn.Sequential(nn.Conv1d(out_channels, out_channels, 1), nn.Sigmoid())
+        self.mask_layer = nn.Conv1d(out_channels, in_channels, 1, bias=False)
 
 
     def forward(self, mix_audio: torch.Tensor, **batch) -> None:
