@@ -1,7 +1,7 @@
 defaults:
   - model: conv_tasnet
   - metrics: baseline_audio
-  - datasets: conv_tasnet # we do not want to run inference on training data
+  - datasets: inference # we do not want to run inference on training data
   - dataloader: onebatch
   - transforms: example_only_instance
   - _self_
